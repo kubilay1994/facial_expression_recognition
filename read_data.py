@@ -4,7 +4,7 @@ import csv
 import numpy as np
 
 
-input_shape = 48, 48
+input_shape = 48, 48, 1
 num_of_classes = 7
 
 
@@ -41,9 +41,7 @@ y_test = to_categorical(y_test, num_classes=num_of_classes)
 y_val = to_categorical(y_val, num_classes=num_of_classes)
 
 
-np.savez_compressed("data/fer2013_train.npz",
-                    X_train=X_train, y_train=y_train)
-np.savez_compressed("data/fer2013_test.npz",
-                    X_test=X_test, y_test=y_test)
-np.savez_compressed("data/fer2013_val.npz",
+np.savez_compressed("data/fer2013.npz",
+                    X_train=X_train, y_train=y_train,
+                    X_test=X_test, y_test=y_test,
                     X_val=X_val, y_val=y_val)
