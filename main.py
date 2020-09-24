@@ -1,6 +1,8 @@
 import cv2
 import numpy as np
 
+from time import perf_counter
+
 from tensorflow.keras.models import load_model
 
 face_cascade = cv2.CascadeClassifier(
@@ -28,7 +30,11 @@ while True:
             img.resize(1, *img.shape, 1)
             img = img / 255
 
-            [index] = np.argmax(model.predict(img), axis=-1)
+            start = perf_counter()
+            p = model.predict(img)
+
+            print(perf_counter() - start)    
+            [index] = np.argmax(p, axis=-1)
             predicted_emotion = emotions[index]
 
         cv2.putText(frame, predicted_emotion, (x, y),
