@@ -10,48 +10,45 @@ face_cascade = cv2.CascadeClassifier(
 
 cap = cv2.VideoCapture("videos/2.mp4")
 
-fourcc = cv2.VideoWriter_fourcc(*'XVID')
-
-out = cv2.VideoWriter('videos/output.avi', fourcc, 20.0,
-                      (int(cap.get(3)), int(cap.get(4))))
-
 model = load_model("models/fer_model")
 emotions = ["Angry", "Disgust", "Fear", "Happy", "Sad", "Surprise", "Neutral"]
 
-fps = cap.get(cv2.CAP_PROP_FPS)
+fourcc = cv2.VideoWriter_fourcc(*'MP4V')
+out = cv2.VideoWriter('videos/output.mp4', fourcc, 20.0, (640, 480))
 
-# i = 0
-# predicted_emotion = emotions[0]
-while True:
+while cap.isOpened():
     ret, frame = cap.read()
 
     if ret == False:
         break
 
     grayscale = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-    faces = face_cascade.detectMultiScale(grayscale, 1.2, 5)
+    faces = face_cascade.detectMultiScale(grayscale, 1.1, 4)
     for (x, y, w, h) in faces:
-        cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 0, 255), 1)
+        cv2.rectangle(frame, (x, y), (x+w, y+h), 255, 1)
 
-        # if i % (fps / 3) == 0:
         img = cv2.resize(grayscale[y:y+h, x:x+w], (48, 48))
         img.resize(1, *img.shape, 1)
         img = img / 255
 
-        # start = perf_counter()
         p = model.predict(img)
 
-        # print(perf_counter() - start)
-        [index] = np.argmax(p, axis=-1)
-        # predicted_emotion = emotions[index]
+        y0, dy = 150, 20
+        for i in range(len(emotions)):
+            y = y0 + i * dy
+            text = f"{emotions[i]} : {p[0][i]:.3f}"
+            cv2.putText(frame, text, (150, y),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
 
-        cv2.putText(frame, emotions[index], (x, y),
-                    cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 3)
+        [index] = np.argmax(p, axis=-1)
+        predicted_emotion = emotions[index]
+        cv2.putText(frame, predicted_emotion, (150, y0 + 8 * dy),
+                    cv2.FONT_HERSHEY_SIMPLEX, 1, 255, 3)
+        break            
 
     out.write(frame)
     cv2.imshow("window", frame)
 
-    # i += 1
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
 
